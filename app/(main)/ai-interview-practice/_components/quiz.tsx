@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { generateQuiz, saveQuizResult } from "@/actions/interview";
 import QuizResult from "./quiz-result";
 import useFetch from "@/hooks/use-fetch";
 import { BarLoader } from "react-spinners";
@@ -33,14 +32,32 @@ export default function Quiz() {
     loading: generatingQuiz,
     fn: generateQuizFn,
     data: quizData,
-  } = useFetch<QuizQuestion[]>(generateQuiz);
+  } = useFetch<QuizQuestion[]>(async () => {
+    const res = await fetch("/api/interview/quiz");
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to generate quiz");
+    }
+    return res.json();
+  });
 
   const {
     loading: savingResult,
     fn: saveQuizResultFn,
     data: resultData,
     setData: setResultData,
-  } = useFetch(saveQuizResult);
+  } = useFetch(async (questions: QuizQuestion[], answers: string[], score: number) => {
+    const res = await fetch("/api/interview/quiz/result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ questions, answers, score }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to save quiz results");
+    }
+    return res.json();
+  });
 
   useEffect(() => {
     if (quizData) {

@@ -1,4 +1,4 @@
-import { getCoverLetters } from "@/actions/cover-letter";
+import { getCoverLetters } from "@/lib/api/cover-letter";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";

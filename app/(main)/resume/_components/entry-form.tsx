@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/card";
 import { entrySchema } from "@/app/lib/schema";
 import { Sparkles, PlusCircle, X, Loader2 } from "lucide-react";
-import { improveWithAI } from "@/actions/resume";
 import { toast } from "sonner";
 import useFetch from "@/hooks/use-fetch";
 
@@ -89,7 +88,19 @@ export function EntryForm({ type, entries, onChange }: EntryFormProps) {
     fn: improveWithAIFn,
     data: improvedContent,
     error: improveError,
-  } = useFetch(improveWithAI);
+  } = useFetch(async ({ current, type }: { current: string; type: string }) => {
+    const res = await fetch("/api/resume/improve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ current, type }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to improve content");
+    }
+    const data = await res.json();
+    return data.content;
+  });
 
   // Add this effect to handle the improvement result
   useEffect(() => {

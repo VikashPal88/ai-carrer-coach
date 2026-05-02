@@ -17,7 +17,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { registerUser } from "@/actions/auth";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -32,7 +31,15 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      await registerUser({ name, email, password });
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Something went wrong");
+      }
       toast.success("Account created successfully!");
 
       // Auto sign in after registration
