@@ -1,8 +1,5 @@
-"use server";
-
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/prisma";
-import { signIn as authSignIn } from "@/auth";
 
 export async function registerUser(data: {
   name: string;
@@ -28,21 +25,4 @@ export async function registerUser(data: {
   });
 
   return { success: true };
-}
-
-export async function signInWithCredentials(data: {
-  email: string;
-  password: string;
-}) {
-  try {
-    await authSignIn("credentials", {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-    });
-
-    return { success: true };
-  } catch {
-    throw new Error("Invalid email or password");
-  }
 }

@@ -1,8 +1,5 @@
-"use server";
-
 import { db } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { revalidatePath } from "next/cache";
 import { generateAIInsights } from "./dashboard";
 
 interface UpdateUserData {
@@ -66,7 +63,6 @@ export async function updateUser(data: UpdateUserData) {
       }
     );
 
-    revalidatePath("/");
     return result.updatedUser;
   } catch (error) {
     console.error(

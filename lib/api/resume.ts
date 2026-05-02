@@ -1,12 +1,26 @@
-"use server";
-
 import { db } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { revalidatePath } from "next/cache";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+export async function getResume() {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+  });
+
+  if (!user) throw new Error("User not found");
+
+  return await db.resume.findUnique({
+    where: {
+      userId: user.id,
+    },
+  });
+}
 
 export async function saveResume(content: string) {
   const session = await auth();
@@ -32,29 +46,11 @@ export async function saveResume(content: string) {
       },
     });
 
-    revalidatePath("/resume");
     return resume;
   } catch (error) {
     console.error("Error saving resume:", error);
     throw new Error("Failed to save resume");
   }
-}
-
-export async function getResume() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
-  });
-
-  if (!user) throw new Error("User not found");
-
-  return await db.resume.findUnique({
-    where: {
-      userId: user.id,
-    },
-  });
 }
 
 export async function improveWithAI({
