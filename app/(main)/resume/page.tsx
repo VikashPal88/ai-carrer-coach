@@ -1,4 +1,4 @@
-import { getResume } from "@/actions/resume";
+import { getResume } from "@/lib/api/resume";
 import ResumeBuilder from "./_components/resume-builder";
 
 export default async function ResumePage() {

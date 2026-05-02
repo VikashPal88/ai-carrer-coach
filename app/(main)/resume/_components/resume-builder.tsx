@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { saveResume } from "@/actions/resume";
 import { EntryForm } from "./entry-form";
 import useFetch from "@/hooks/use-fetch";
 import { useSession } from "next-auth/react";
@@ -58,7 +57,18 @@ export default function ResumeBuilder({ initialContent }: ResumeBuilderProps) {
     fn: saveResumeFn,
     data: saveResult,
     error: saveError,
-  } = useFetch(saveResume);
+  } = useFetch(async (content: string) => {
+    const res = await fetch("/api/resume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to save resume");
+    }
+    return res.json();
+  });
 
   // Watch form fields for preview updates
   const formValues = watch();

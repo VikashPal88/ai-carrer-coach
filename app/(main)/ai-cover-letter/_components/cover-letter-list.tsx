@@ -23,7 +23,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteCoverLetter } from "@/actions/cover-letter";
 
 interface CoverLetter {
   id: string;
@@ -44,7 +43,13 @@ export default function CoverLetterList({
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteCoverLetter(id);
+      const res = await fetch(`/api/cover-letter/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to delete cover letter");
+      }
       toast.success("Cover letter deleted successfully!");
       router.refresh();
     } catch (error) {

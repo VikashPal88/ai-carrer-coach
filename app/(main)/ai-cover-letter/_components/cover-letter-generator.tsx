@@ -15,7 +15,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { generateCoverLetter } from "@/actions/cover-letter";
 import useFetch from "@/hooks/use-fetch";
 import { coverLetterSchema } from "@/app/lib/schema";
 import { useEffect } from "react";
@@ -37,7 +36,18 @@ export default function CoverLetterGenerator() {
     loading: generating,
     fn: generateLetterFn,
     data: generatedLetter,
-  } = useFetch(generateCoverLetter);
+  } = useFetch(async (data: { companyName: string; jobTitle: string; jobDescription: string }) => {
+    const res = await fetch("/api/cover-letter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to generate cover letter");
+    }
+    return res.json();
+  });
 
   // Update content when letter is generated
   useEffect(() => {

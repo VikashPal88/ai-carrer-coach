@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/select";
 import useFetch from "@/hooks/use-fetch";
 import { onboardingSchema } from "@/app/lib/schema";
-import { updateUser } from "@/actions/user";
 
 interface Industry {
   id: string;
@@ -50,7 +49,19 @@ const OnboardingForm = ({ industries }: OnboardingFormProps) => {
     loading: updateLoading,
     fn: updateUserFn,
     data: updateResult,
-  } = useFetch(updateUser);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } = useFetch(async (data: any) => {
+    const res = await fetch("/api/user", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to update profile");
+    }
+    return res.json();
+  });
 
   const {
     register,
@@ -81,7 +92,7 @@ const OnboardingForm = ({ industries }: OnboardingFormProps) => {
   useEffect(() => {
     if (updateResult && !updateLoading) {
       toast.success("Profile completed successfully!");
-      router.push("/dashboard");
+      router.replace("/dashboard");
       router.refresh();
     }
   }, [updateResult, updateLoading, router]);
